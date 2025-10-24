@@ -1,0 +1,55 @@
+port: 5050
+aggregation_max_workers: 4
+log_level: INFO
+host: 0.0.0.0
+metric_storage: disk
+metadata_storage_path: metadata
+metric_storage_path: metrics_data
+metric_prometheus_url: https://localhost:7090
+model_storage_path: ../models/models_info
+
+models:
+  prophet_logistic_7:
+    model_class: "ProphetModellerLogistic"
+    days_to_train: 7
+
+metrics:
+  model_to_use: "prophet_logistic_7"  # Default model to use for all metrics
+  metric_placeholders:
+    $cluster: as80_cluster_FULL
+  aerospike_namespace_master_objects: 
+    description: "Aerospike namespace client read throughput"
+    metric_labels:
+      cluster_name: as80_cluster_1
+      job: aerospike
+      dummy_label: dummy_value
+    model_to_use: "prophet_logistic_7"  # Specify which model to use for this metric  
+    metric_chunk_hours: 6
+    metric_history_hours: 960
+    metric_placeholders:
+      $cluster: as80_cluster_1
+    metric_query: aerospike_namespace_master_objects{cluster_name="$cluster", ns="test"}
+    metric_step: 1m
+    metric_timezone: UTC
+    model_growth: logistic
+    predict_future_hours: 2
+    predict_next_cycle_secs: 720
+  second_aerospike_namespace_master_objects: 
+    description: "Second Aerospike namespace client read throughput"
+    metric_chunk_hours: 6
+    metric_history_hours: 168
+    metric_labels:
+      cluster_name: numa
+      job: aerospike
+    metric_placeholders:
+      $__rate_interval: 1m
+      $cluster: numa
+      $job_name: aerospike
+      $namespace: .*
+      $node: .*
+    metric_query: second_aerospike_namespace_master_objects{cluster_name="as80_cluster_1", instance="172.17.0.2:9145", job="aerospike", latitude="0", longitude="0", ns="test", service="172.17.0.2:3000", storage_engine="memory"}
+    metric_step: 5m
+    metric_timezone: UTC
+    model_growth: logistic
+    predict_future_hours: 2
+    predict_next_cycle_secs: 720
